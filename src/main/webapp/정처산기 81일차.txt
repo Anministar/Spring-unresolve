@@ -1,0 +1,154 @@
+			### Spring ###
+
+Spring sts 검색 해서 Spring Famework와 STS(Spring Tool Suite) 간략 정리 확인
+- 주소
+https://velog.io/@donkey8/Spring-Framework%EC%99%80-STSSpring-Tool-Suite-%EA%B0%84%EB%9E%B5-%EC%A0%95%EB%A6%AC
+
+
+openjdk download 들어가서 다운로드 하면 11.0.2 windows 64-bit 다운로드 해서 환경설정까지 해주면 일단 Okay
+
+
+STS tool Spring 웹 브라우져에 검색
+쭉 내려가서 보면 Looking for Spring Tool Suite 3? 이라는 문구가 나올 텐데 파란색 글씨로 Spring Tool Suite 3 wiki 들어가기
+
+내리다보면 Spring Tool Suite 3.9.18에 첫번째 https://download.springsource.com/release/STS/3.9.18.RELEASE/dist/e4.21/spring-tool-suite-3.9.18 RELEASE-34.21.0-win32-x86_64.zip 다운하면 됨.
+
+
+Spring Boot 부터는 Tomcat이 내장되어있지만 3버젼까지는 Tomcat을 써야함.
+
+파일 압축해제하고 sts-3.9.18.RELEASE만 따로 분리해서 복사 붙여넣기 그리고 실행하고 sts-3.9.18 RELEASE 안에 workspace만들고 그 경로로 실행
+
+실행하고 나면 왼쪽에 Spring Legacy Project 클릭하거나 상단에 File- New- Spring Legacy Project 클릭하면 됨.
+Configure templates 들어가서 defaults 빼고 두개 삭제 - 껐다가 다시 열기 - 다시 Spring Legacy Project 클릭 - Spring MVC Project가 나오면 정상- 그거 선택하고 basic하고 next - domain명 적는게 나오는데 com.test.app 적기.
+
+windows- preperences - files검색 - JSON, CSS, HTML, JSP Files encoding 설정
+Tomcat 서버 추가!!!
+프로젝트 우클릭 - properties - java build path - libraries - server runtime 추가 - project Facets java version 설정 - runtime 설정 apply - server - tomcat 클릭 확인
+
+
+WEB-INF에 직접접근 안되는데 자꾸 그 안에 jsp파일에서 실행하면 404에러가 뜸.
+
+
+web.xml에 들어가서 source에다가 
+
+	<!-- 한글 변환 필터 시작 -->
+	<filter>
+		<filter-name>encodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>forceEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<!-- 한글 변환 필터 끝 -->
+
+
+</web-app> 위에다가 이걸 추가해야함.
+
+프로젝트 우클릭해서 Run on server를 해보면 Homcontroller를 이용해서 home.jsp를 실행할것임.
+
+com.sun.org.apache.xerces.internal.util.URI$MalformedURIException: Path contains invalid character : 정
+==> Homcontroller를 실행해보면 한글 문자때문에 이런 에러가 뜨게 된다.
+
+
+웹 브라우져에 Path contains invalid character 이거 검색해보면 에러 해결 블로그가 나오는데, dependency를 pom.xml에다가 붙여넣게 주면 Spring이 알아서 연결해줌.
+maven xerce 검색해서 나오는거 version클릭해서  dependency 복사
+pom.xml을 열어주고 </dependecies>를 찾아서 그 위에 붙여넣기
+그러면 왼쪽에 Maven Dependencies라는 라이브러리에 자동으로 추가가 되고 프로젝트 우클릭해서 Maven- Update - ok하면 적용이 됨.
+그러고나서 프로젝트 run on server하면 실행이 안됨. 다른 에러가 뜨는데 이건 자바 버젼이 안맞아서 그럼.
+
+pom.xml에 java version을 11로 바꿔주고 밑으로 쭉 내려가면 dependencies가 끝나는 부분에 maven-eclipse-plugin과 org.apache.maven.plugins가 있는데 후자의 version을 3.5.1로 그리고 source와 target에 ${java-version}를 추가
+
+spring version도 5.0.7로 바꿔주기
+
+프로젝트 우클릭 - Maven - Update Project 해주면 JRE System Library가 JavaSE-11버젼으로 맞춰질꺼임.
+
+윈도우기준으로 이렇게 추가한게 어디있냐면 Windows(C) - 사용자 -Administrator - .m2 - repository에 다있음. 그래서 뭔가 문제가 생겼다 그러면 여기 와서 삭제하면 됨.
+
+.m2를 삭제하고 다시 Spring을 실행하면 dependency를 읽어들이면서 새로 .m2가 생기고 여기에 알아서 다운로드해서 새로 파일들을 집어넣을꺼임.
+
+프로젝트 우클릭 - Run as - maven install
+==> maven이 pom.xml을 읽고 다운받아야하는게 있으면 다운받고 그럼.
+
+pom.xml가서 org.apache.maven.plugins에  </configuration> 위에 <encoding>UTF-8</encoding>이거 추가 안하면 나중에 배포할 때 문제가 생길 수 있음.
+
+run as - run on server 에 문제가 없어야하고
+run as - maven install 해서 build sucess가 나와야함.
+
+이렇게 깔끔한 상태를 이제 Backup시켜놓기!!!!!
+
+
+			## Spring lombok ##
+에노테이션이 Getter, Setter, toString, Dto, Entity 관련 작업을 쉽게 할 수 있는 라이브러리이다.
+
+maven lombok 검색 - maven repository 라고 적혀있는거 클릭 - 젤 위 버젼 클릭 maven 소스 복사 - pom.xml 안에 dependencies 위에 붙여넣기 - 왼쪽 maven Dependencies에 lombok-1.18.24.jar 들어가있는지 확인.
+
+lombok이 설치되면 mavne dependencies에 들어가서 우클릭 속성에 들어가서 properties들어가기 - java source attachment 들어가서 path의 lombok전까지 복사(C:/Users/Administrator/.m2/repository/org/projectlombok/lombok/1.18.24)
+
+파일 탐색기 들어가서 해당위치로 이동 - lombok-1.18.24.jar 들어가면 설치 마법사가 뜸. 거기서 경로 잡아주고 install/update
+
+
+@ : 에노테이션이 Spring한테 말하는거임, Getter 함수 만들어줘, Setter  함수 만들어줘 이런식으로
+
+
+C경로 바로 아래에 sts-3.9.18.RELEASE가 있어야하는데 뭐 타고타고 가서 lombok Getter, Setter가 만들어지지 않았음. 그래서 C로 폴더를 옮기고(만약에 sts-bundle이 C바로 밑에 있으면 지워야함.) STS.ini 메모장 열어서 마지막 lombok지우기
+그리고 실행
+
+mavne dependencies에 들어가서 우클릭 속성에 들어가서 properties들어가기 - java source attachment 들어가서 path의 lombok전까지 복사(C:/Users/Administrator/.m2/repository/org/projectlombok/lombok/1.18.24)
+
+파일 탐색기 들어가서 해당위치로 이동 - lombok-1.18.24.jar 들어가면 설치 마법사가 뜸. 거기서 경로 잡아주고 install/update
+==> 이거 다시 한번 더 하기
+
+프로젝트 우클릭 - Maven - Update Project
+프로젝트 우클릭 - Run as - Maven clean 하거나 껐다 키거나 해줘야함. (Rebuild)
+
+File - New - JUnit test case : dto test해주는 애임.
+Run as - JUnit test 돌려보기!!
+
+
+unit test가 안된다면 프로젝트 우클릭 - properties -java build path - classpath - add library - junit - 4버젼 추가.
+pom.xml에 Test검색해서 version을 4.12로 바꾸기.
+
+
+@Builder : 모든 인자를 받거나 아예 디폴트 생성자 말고도 몇가지의 인자만 받을 수 있음.
+
+BoardDto dto3 = new BoardDto().builder()
+				.no("1")
+				.title("제목")
+				.content("내용")
+				.filename("파일명")
+				.email("example@naver.com")
+				.build();
+사용방법은 위와 같다!!!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
