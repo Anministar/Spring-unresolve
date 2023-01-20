@@ -16,12 +16,17 @@
 	<resources mapping="/resources/**" location="/resources/" />
 
 	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<!-- @ 기본적으로 스프링에서 View를 지원하는것, View로 이동할 수 있는 객체 -->
 	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<beans:property name="prefix" value="/WEB-INF/views/" />
 		<beans:property name="suffix" value=".jsp" />
 	</beans:bean>
 	
+	<!-- @ Bean으로 추가할게 있다면 component-scan을 통해 Scanning을 해서 Bean에 등록함 -->
 	<context:component-scan base-package="com.test.app" />
+	
+	<!-- @ 여기서 해도 하위 코드를 추가해도 되지만 root가 지금 깔끔해서 root-context.xml에 추가할 꺼임. -->
+	<!-- <context:component-scan base-package="com.test.dto" /> -->
 	
 	
 	

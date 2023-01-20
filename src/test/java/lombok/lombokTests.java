@@ -1,4 +1,4 @@
-package dto;
+package lombok;
 
 import org.junit.Test;
 
